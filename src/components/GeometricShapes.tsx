@@ -9,119 +9,38 @@ const GeometricShapes = () => {
   const rotate2 = useTransform(scrollY, [0, 3000], [0, -90]);
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-      {/* Large floating cube wireframe */}
-      <motion.div
-        className="absolute top-[10%] right-[10%] w-32 h-32 md:w-48 md:h-48"
-        style={{ y: y1, rotate: rotate1 }}
-      >
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 hidden md:block">
+      <motion.div className="absolute top-[10%] right-[10%] w-32 h-32 md:w-48 md:h-48"
+        style={{ y: y1, rotate: rotate1 }}>
         <div className="relative w-full h-full animate-float-slow">
           <svg viewBox="0 0 100 100" className="w-full h-full opacity-20">
-            <path
-              d="M10 30 L50 10 L90 30 L90 70 L50 90 L10 70 Z"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.5"
-            />
-            <path
-              d="M10 30 L50 50 L90 30"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.5"
-            />
-            <path
-              d="M50 50 L50 90"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.5"
-            />
+            <path d="M10 30 L50 10 L90 30 L90 70 L50 90 L10 70 Z" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            <path d="M10 30 L50 50 L90 30" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            <path d="M50 50 L50 90" fill="none" stroke="currentColor" strokeWidth="0.5" />
           </svg>
         </div>
       </motion.div>
 
-      {/* Floating ring */}
-      <motion.div
-        className="absolute top-[40%] left-[5%] w-24 h-24 md:w-40 md:h-40"
-        style={{ y: y2 }}
-      >
+      <motion.div className="absolute top-[40%] left-[5%] w-24 h-24 md:w-40 md:h-40" style={{ y: y2 }}>
         <div className="relative w-full h-full animate-float-delayed">
           <svg viewBox="0 0 100 100" className="w-full h-full opacity-15">
-            <circle
-              cx="50"
-              cy="50"
-              r="40"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.5"
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r="30"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.5"
-            />
-            <ellipse
-              cx="50"
-              cy="50"
-              rx="40"
-              ry="15"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.5"
-              transform="rotate(60 50 50)"
-            />
+            <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            <ellipse cx="50" cy="50" rx="40" ry="15" fill="none" stroke="currentColor" strokeWidth="0.5" transform="rotate(60 50 50)" />
           </svg>
         </div>
       </motion.div>
 
-      {/* Pyramid wireframe */}
-      <motion.div
-        className="absolute top-[60%] right-[15%] w-20 h-20 md:w-32 md:h-32"
-        style={{ y: y3, rotate: rotate2 }}
-      >
+      <motion.div className="absolute top-[60%] right-[15%] w-20 h-20 md:w-32 md:h-32"
+        style={{ y: y3, rotate: rotate2 }}>
         <div className="relative w-full h-full animate-float">
           <svg viewBox="0 0 100 100" className="w-full h-full opacity-15">
-            <path
-              d="M50 10 L90 80 L10 80 Z"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.5"
-            />
-            <path
-              d="M50 10 L50 60 M50 60 L90 80 M50 60 L10 80"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.5"
-            />
+            <path d="M50 10 L90 80 L10 80 Z" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            <path d="M50 10 L50 60 M50 60 L90 80 M50 60 L10 80" fill="none" stroke="currentColor" strokeWidth="0.5" />
           </svg>
         </div>
       </motion.div>
 
-      {/* Small floating dots */}
-      {[...Array(6)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-2 h-2 rounded-full bg-foreground/10"
-          style={{
-            top: `${20 + i * 15}%`,
-            left: `${10 + i * 15}%`,
-            y: useTransform(scrollY, [0, 3000], [0, -200 - i * 50]),
-          }}
-          animate={{
-            scale: [1, 1.5, 1],
-            opacity: [0.1, 0.3, 0.1],
-          }}
-          transition={{
-            duration: 3 + i * 0.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-      ))}
-
-      {/* Grid lines background */}
       <div className="absolute inset-0 opacity-[0.02]">
         <svg className="w-full h-full">
           <defs>

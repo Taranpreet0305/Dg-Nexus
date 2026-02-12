@@ -23,21 +23,15 @@ const TiltCard = ({
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (!cardRef.current) return;
-
       const rect = cardRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-
       const mouseX = e.clientX - centerX;
       const mouseY = e.clientY - centerY;
-
       const rotateX = (mouseY / (rect.height / 2)) * -maxTilt;
       const rotateY = (mouseX / (rect.width / 2)) * maxTilt;
-
-      // Glare position
       const glareX = ((e.clientX - rect.left) / rect.width) * 100;
       const glareY = ((e.clientY - rect.top) / rect.height) * 100;
-
       setTilt({ rotateX, rotateY, scale });
       setGlarePosition({ x: glareX, y: glareY });
     },
@@ -62,8 +56,6 @@ const TiltCard = ({
       onMouseLeave={handleMouseLeave}
     >
       {children}
-      
-      {/* Glare effect */}
       {glareEnabled && (
         <div
           className="absolute inset-0 pointer-events-none rounded-lg overflow-hidden z-20"
@@ -74,18 +66,6 @@ const TiltCard = ({
           }}
         />
       )}
-
-      {/* 3D shine edge effect */}
-      <div
-        className="absolute inset-0 pointer-events-none rounded-lg z-10"
-        style={{
-          boxShadow: tilt.scale > 1 
-            ? `${-tilt.rotateY * 0.5}px ${tilt.rotateX * 0.5}px 30px hsl(0 0% 100% / 0.1), 
-               ${-tilt.rotateY * 0.3}px ${tilt.rotateX * 0.3}px 60px hsl(220 10% 85% / 0.1)`
-            : 'none',
-          transition: 'box-shadow 0.3s ease',
-        }}
-      />
     </motion.div>
   );
 };

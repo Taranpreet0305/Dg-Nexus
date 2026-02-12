@@ -22,12 +22,8 @@ const StaggeredContainer = memo(({
 
   const itemVariants = useMemo((): Variants => {
     if (shouldReduceMotion) {
-      return {
-        hidden: { opacity: 0 },
-        visible: { opacity: 1 },
-      };
+      return { hidden: { opacity: 0 }, visible: { opacity: 1 } };
     }
-
     const directions = {
       up: { y: 25, x: 0 },
       down: { y: -25, x: 0 },
@@ -35,9 +31,7 @@ const StaggeredContainer = memo(({
       right: { x: -25, y: 0 },
       fade: { x: 0, y: 0 },
     };
-
     const { x, y } = directions[direction];
-
     return {
       hidden: { opacity: 0, x, y },
       visible: { opacity: 1, x: 0, y: 0 },
@@ -47,10 +41,7 @@ const StaggeredContainer = memo(({
   const containerVariants: Variants = useMemo(() => ({
     hidden: {},
     visible: {
-      transition: {
-        staggerChildren: staggerDelay,
-        delayChildren: 0.05,
-      },
+      transition: { staggerChildren: staggerDelay, delayChildren: 0.05 },
     },
   }), [staggerDelay]);
 
@@ -70,10 +61,7 @@ const StaggeredContainer = memo(({
             <motion.div
               key={index}
               variants={itemVariants}
-              transition={{
-                duration: 0.4,
-                ease: [0.25, 0.46, 0.45, 0.94],
-              }}
+              transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
               {child}
             </motion.div>

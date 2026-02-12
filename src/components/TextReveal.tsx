@@ -18,7 +18,6 @@ const TextReveal = ({
 }: TextRevealProps) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });
-
   const letters = children.split('');
 
   return (
@@ -34,7 +33,7 @@ const TextReveal = ({
             delay: delay + index * staggerDelay,
             ease: [0.215, 0.61, 0.355, 1],
           }}
-          style={{ 
+          style={{
             display: letter === ' ' ? 'inline' : 'inline-block',
             transformOrigin: 'bottom',
           }}

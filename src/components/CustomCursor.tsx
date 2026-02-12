@@ -4,7 +4,6 @@ import { motion, useSpring, useMotionValue } from 'framer-motion';
 const CustomCursor = () => {
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
-  const isHoveringRef = useRef(false);
   const trailPointsRef = useRef<{ x: number; y: number }[]>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number>();
@@ -13,178 +12,96 @@ const CustomCursor = () => {
   const cursorXSpring = useSpring(cursorX, springConfig);
   const cursorYSpring = useSpring(cursorY, springConfig);
 
-  // Draw smooth bezier curve trail
   const drawTrail = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
     const points = trailPointsRef.current;
-    
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     if (points.length < 3) {
       animationFrameRef.current = requestAnimationFrame(drawTrail);
       return;
     }
-
-    // Create smooth bezier curve through points
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
-
-    // Use catmull-rom to bezier conversion for smooth curves
     for (let i = 0; i < points.length - 2; i++) {
       const p0 = points[Math.max(i - 1, 0)];
       const p1 = points[i];
       const p2 = points[i + 1];
       const p3 = points[Math.min(i + 2, points.length - 1)];
-
-      // Calculate control points for bezier curve
       const cp1x = p1.x + (p2.x - p0.x) / 6;
       const cp1y = p1.y + (p2.y - p0.y) / 6;
       const cp2x = p2.x - (p3.x - p1.x) / 6;
       const cp2y = p2.y - (p3.y - p1.y) / 6;
-
       ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
     }
-
-    // Create gradient along the path
     const gradient = ctx.createLinearGradient(
-      points[0].x, points[0].y,
-      points[points.length - 1].x, points[points.length - 1].y
+      points[0].x, points[0].y, points[points.length - 1].x, points[points.length - 1].y
     );
     gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
     gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.15)');
     gradient.addColorStop(1, 'rgba(255, 255, 255, 0.4)');
-
     ctx.strokeStyle = gradient;
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke();
-
-    // Add glow effect
-    ctx.shadowColor = 'rgba(255, 255, 255, 0.3)';
-    ctx.shadowBlur = 10;
-    ctx.stroke();
-
     animationFrameRef.current = requestAnimationFrame(drawTrail);
   }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    // Set canvas size
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     };
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
-
-    let lastX = 0;
-    let lastY = 0;
-
+    let lastX = 0, lastY = 0;
     const moveCursor = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
-
-      // Calculate distance for trail point addition
       const distance = Math.hypot(e.clientX - lastX, e.clientY - lastY);
-
       if (distance > 8) {
         lastX = e.clientX;
         lastY = e.clientY;
-
-        // Add point and keep trail limited
         trailPointsRef.current.push({ x: e.clientX, y: e.clientY });
-        if (trailPointsRef.current.length > 20) {
-          trailPointsRef.current.shift();
-        }
+        if (trailPointsRef.current.length > 20) trailPointsRef.current.shift();
       }
-
-      // Fade out trail gradually
       if (trailPointsRef.current.length > 0) {
         trailPointsRef.current = trailPointsRef.current.slice(-18);
       }
     };
-
-    const handleMouseEnter = () => { isHoveringRef.current = true; };
-    const handleMouseLeave = () => { isHoveringRef.current = false; };
-
-    // Use passive event listener for better performance
     window.addEventListener('mousemove', moveCursor, { passive: true });
-
-    // Start animation loop
     animationFrameRef.current = requestAnimationFrame(drawTrail);
-
-    // Decay trail when not moving
     const decayInterval = setInterval(() => {
-      if (trailPointsRef.current.length > 0) {
-        trailPointsRef.current.shift();
-      }
+      if (trailPointsRef.current.length > 0) trailPointsRef.current.shift();
     }, 50);
-
-    const interactiveElements = document.querySelectorAll('a, button, [data-cursor-hover]');
-    interactiveElements.forEach((el) => {
-      el.addEventListener('mouseenter', handleMouseEnter);
-      el.addEventListener('mouseleave', handleMouseLeave);
-    });
-
     return () => {
       window.removeEventListener('mousemove', moveCursor);
       window.removeEventListener('resize', resizeCanvas);
       clearInterval(decayInterval);
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      interactiveElements.forEach((el) => {
-        el.removeEventListener('mouseenter', handleMouseEnter);
-        el.removeEventListener('mouseleave', handleMouseLeave);
-      });
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
   }, [cursorX, cursorY, drawTrail]);
 
   return (
     <>
-      {/* Canvas for smooth bezier trail */}
-      <canvas
-        ref={canvasRef}
-        className="fixed inset-0 pointer-events-none z-[9995] hidden md:block"
-        style={{ width: '100%', height: '100%' }}
-      />
-
-      {/* Main cursor dot */}
-      <motion.div
-        className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference hidden md:block"
-        style={{
-          x: cursorXSpring,
-          y: cursorYSpring,
-        }}
-      >
+      <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-[9995] hidden md:block"
+        style={{ width: '100%', height: '100%' }} />
+      <motion.div className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference hidden md:block"
+        style={{ x: cursorXSpring, y: cursorYSpring }}>
         <div className="relative -translate-x-1/2 -translate-y-1/2">
           <div className="w-3 h-3 bg-foreground rounded-full" />
         </div>
       </motion.div>
-
-      {/* Outer ring */}
-      <motion.div
-        className="fixed top-0 left-0 pointer-events-none z-[9998] hidden md:block"
-        style={{
-          x: cursorXSpring,
-          y: cursorYSpring,
-        }}
-      >
+      <motion.div className="fixed top-0 left-0 pointer-events-none z-[9998] hidden md:block"
+        style={{ x: cursorXSpring, y: cursorYSpring }}>
         <div className="relative -translate-x-1/2 -translate-y-1/2">
-          <div 
-            className="w-8 h-8 border border-foreground/40 rounded-full transition-transform duration-200"
-            style={{
-              boxShadow: '0 0 8px hsl(var(--foreground) / 0.1)',
-            }}
-          />
+          <div className="w-8 h-8 border border-foreground/40 rounded-full transition-transform duration-200"
+            style={{ boxShadow: '0 0 8px hsl(var(--foreground) / 0.1)' }} />
         </div>
       </motion.div>
     </>
