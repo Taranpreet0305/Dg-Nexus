@@ -1,6 +1,7 @@
 import { motion, useMotionValue, useSpring, animate } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 import { ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import Lightbox from './Lightbox';
 import ProjectTransition from './ProjectTransition';
 import OptimizedImage from './OptimizedImage';
@@ -57,45 +58,37 @@ const CurvedCarousel = () => {
   const [transitionTarget, setTransitionTarget] = useState<{ title: string; url: string } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  
+
+  const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
   const dragX = useMotionValue(0);
   const smoothDragX = useSpring(dragX, { stiffness: 300, damping: 30 });
-  const cardWidth = 180;
-  const cardGap = 20;
+  const cardWidth = isMobile ? 120 : 180;
+  const cardGap = isMobile ? 12 : 20;
   const totalItems = works.length;
-  
-  // Auto-rotate for infinite loop
+
   useEffect(() => {
     if (!isAutoPlaying) return;
-    
     const interval = setInterval(() => {
       setActiveIndex(prev => (prev + 1) % totalItems);
     }, 3000);
-    
     return () => clearInterval(interval);
   }, [isAutoPlaying, totalItems]);
-  
+
   const handleDragStart = () => {
     setIsDragging(true);
     setIsAutoPlaying(false);
   };
-  
+
   const handleDragEnd = (_: any, info: any) => {
     setIsDragging(false);
     const offset = info.offset.x;
     const velocity = info.velocity.x;
-    
     const cardsToMove = Math.round((offset + velocity * 0.15) / (cardWidth + cardGap));
     let newIndex = activeIndex - cardsToMove;
-    
-    // Wrap around for infinite loop
     newIndex = ((newIndex % totalItems) + totalItems) % totalItems;
-    
     setActiveIndex(newIndex);
     animate(dragX, 0, { type: 'spring', stiffness: 300, damping: 30 });
-    
-    // Resume auto-play after interaction
     setTimeout(() => setIsAutoPlaying(true), 5000);
   };
 
@@ -130,14 +123,10 @@ const CurvedCarousel = () => {
     setTimeout(() => setIsAutoPlaying(true), 5000);
   };
 
-  // Calculate circular position for each card
   const getCardPosition = (index: number) => {
     let offset = index - activeIndex;
-    
-    // Handle wrapping for infinite loop - find shortest path
     if (offset > totalItems / 2) offset -= totalItems;
     if (offset < -totalItems / 2) offset += totalItems;
-    
     return offset;
   };
 
@@ -145,7 +134,6 @@ const CurvedCarousel = () => {
     <>
       <section id="work" className="py-16 sm:py-24 md:py-32 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
-          {/* Section Header */}
           <motion.div
             className="text-center mb-8 sm:mb-12 md:mb-16"
             initial={{ opacity: 0, y: 50 }}
@@ -166,14 +154,12 @@ const CurvedCarousel = () => {
             </p>
           </motion.div>
 
-          {/* Infinite Circular Carousel */}
-          <div 
+          <div
             ref={containerRef}
-            className="relative h-[420px] sm:h-[480px] md:h-[520px] flex items-center justify-center select-none"
+            className="relative h-[360px] sm:h-[480px] md:h-[520px] flex items-center justify-center select-none"
             onMouseEnter={() => setIsAutoPlaying(false)}
             onMouseLeave={() => setIsAutoPlaying(true)}
           >
-            {/* Navigation Arrows */}
             <button
               onClick={() => navigateCarousel('prev')}
               className="absolute left-2 sm:left-8 z-20 p-2 sm:p-3 rounded-full bg-background/50 backdrop-blur-sm border border-border/50 transition-all duration-300 hover:bg-background/80"
@@ -200,20 +186,19 @@ const CurvedCarousel = () => {
                 const offset = getCardPosition(index);
                 const absOffset = Math.abs(offset);
                 const isActive = index === activeIndex;
-                
-                // Only render cards that are visible (within 5 positions)
-                if (absOffset > 5) return null;
-                
-                // Circular arc positioning
-                const angle = offset * 15; // degrees per card
-                const radius = 400; // arc radius
+
+                if (absOffset > (isMobile ? 3 : 5)) return null;
+
+                const anglePer = isMobile ? 20 : 15;
+                const radius = isMobile ? 220 : 400;
+                const angle = offset * anglePer;
                 const xOffset = Math.sin((angle * Math.PI) / 180) * radius;
                 const yOffset = (1 - Math.cos((angle * Math.PI) / 180)) * radius * 0.3;
-                const rotation = offset * 5;
-                const scale = Math.max(0.6, 1 - absOffset * 0.12);
-                const opacity = Math.max(0.3, 1 - absOffset * 0.2);
+                const rotation = offset * (isMobile ? 7 : 5);
+                const scale = Math.max(0.6, 1 - absOffset * (isMobile ? 0.18 : 0.12));
+                const opacity = Math.max(0.3, 1 - absOffset * (isMobile ? 0.3 : 0.2));
                 const zIndex = 10 - absOffset;
-                
+
                 return (
                   <motion.div
                     key={`${work.title}-${index}`}
@@ -234,12 +219,11 @@ const CurvedCarousel = () => {
                     onClick={() => handleCardClick(index, work)}
                     whileHover={isActive ? { scale: scale * 1.05, y: yOffset - 10 } : {}}
                   >
-                    <div 
-                      className={`relative w-[140px] sm:w-[160px] md:w-[180px] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl group transition-shadow duration-300 ${
+                    <div
+                      className={`relative w-[110px] sm:w-[160px] md:w-[180px] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl group transition-shadow duration-300 ${
                         isActive ? 'shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)]' : ''
                       }`}
                     >
-                      {/* Optimized Image */}
                       <OptimizedImage
                         src={work.image}
                         alt={work.title}
@@ -249,19 +233,17 @@ const CurvedCarousel = () => {
                         priority={absOffset <= 2}
                         draggable={false}
                       />
-                      
-                      {/* Gradient Overlay */}
+
                       <div className={`absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent transition-opacity duration-300 ${
                         isActive ? 'opacity-80' : 'opacity-0'
                       }`} />
-                      
-                      {/* Title - Only visible on active card */}
-                      <motion.div 
+
+                      <motion.div
                         className="absolute bottom-0 left-0 right-0 p-3 sm:p-4"
                         initial={false}
-                        animate={{ 
+                        animate={{
                           opacity: isActive ? 1 : 0,
-                          y: isActive ? 0 : 20 
+                          y: isActive ? 0 : 20
                         }}
                         transition={{ duration: 0.25 }}
                       >
@@ -272,8 +254,7 @@ const CurvedCarousel = () => {
                           {work.title}
                         </h3>
                       </motion.div>
-                      
-                      {/* External link button */}
+
                       {isActive && work.link !== '#' && (
                         <motion.button
                           className="absolute top-2 right-2 p-1.5 sm:p-2 rounded-full bg-background/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-background/80"
@@ -284,8 +265,7 @@ const CurvedCarousel = () => {
                           <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
                         </motion.button>
                       )}
-                      
-                      {/* Shine effect */}
+
                       {isActive && (
                         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-tr from-transparent via-foreground/5 to-transparent pointer-events-none" />
                       )}
@@ -294,8 +274,7 @@ const CurvedCarousel = () => {
                 );
               })}
             </motion.div>
-            
-            {/* Progress dots */}
+
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 max-w-[280px] flex-wrap justify-center">
               {works.map((_, index) => (
                 <button
@@ -306,8 +285,8 @@ const CurvedCarousel = () => {
                     setTimeout(() => setIsAutoPlaying(true), 5000);
                   }}
                   className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                    index === activeIndex 
-                      ? 'bg-primary w-4' 
+                    index === activeIndex
+                      ? 'bg-primary w-4'
                       : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
                   }`}
                 />
@@ -315,7 +294,6 @@ const CurvedCarousel = () => {
             </div>
           </div>
 
-          {/* See More Projects Button */}
           <motion.div
             className="flex justify-center mt-8"
             initial={{ opacity: 0, y: 20 }}

@@ -7,6 +7,7 @@ import LoadingAnimation from '@/components/LoadingAnimation';
 import About from '@/components/About';
 import Skills from '@/components/Skills';
 import Projects from '@/components/Projects';
+import CurvedCarousel from '@/components/CurvedCarousel';
 import Experience from '@/components/Experience';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
@@ -35,6 +36,9 @@ const Index = () => {
               <Skills />
             </SectionReveal>
           </ParallaxSection>
+          <SectionReveal direction="up" staggerDelay={0.1}>
+            <CurvedCarousel />
+          </SectionReveal>
           <ParallaxSection speed={0.2} direction="right">
             <SectionReveal direction="right" staggerDelay={0.1}>
               <Projects />
