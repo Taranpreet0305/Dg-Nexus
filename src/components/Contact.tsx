@@ -46,11 +46,26 @@ const Contact = () => {
       return;
     }
     setIsSubmitting(true);
-    // Simulate submission since Supabase isn't connected
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast.success("Message sent successfully! I'll get back to you soon.");
-    setFormData({ name: '', email: '', phone: '', message: '' });
-    setIsSubmitting(false);
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          access_key: 'ae3dd49d-6d38-4169-9385-b25dd6958633',
+          ...result.data,
+        }),
+      });
+      if (response.ok) {
+        toast.success("Message sent successfully! I'll get back to you soon.");
+        setFormData({ name: '', email: '', phone: '', message: '' });
+      } else {
+        toast.error("Failed to send message. Please try again.");
+      }
+    } catch {
+      toast.error("Network error. Please try again later.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -133,8 +148,11 @@ const Contact = () => {
                 }`} placeholder="Tell me about your project..." />
               {errors.message && <p className="text-destructive text-xs mt-1">{errors.message}</p>}
             </div>
-            <MagneticButton as="button" className="btn-outline w-full" strength={0.25} radius={150}
-              onClick={(e) => { if (!isSubmitting) handleSubmit(e as any); }}>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="btn-outline w-full"
+            >
               {isSubmitting ? (
                 <span className="flex items-center justify-center gap-2">
                   <motion.span animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
@@ -142,7 +160,7 @@ const Contact = () => {
                   Sending...
                 </span>
               ) : 'Send Message'}
-            </MagneticButton>
+            </button>
           </motion.form>
         </div>
       </div>
